@@ -38,3 +38,6 @@ out/
 
 ### oauth ###
 application-oauth.properties
+
+### yml ###
+application-gpt.properties
