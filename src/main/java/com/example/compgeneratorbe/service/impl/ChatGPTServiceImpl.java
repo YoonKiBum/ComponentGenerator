@@ -45,9 +45,9 @@ public class ChatGPTServiceImpl implements ChatGPTService {
         HttpHeaders headers = chatGPTConfig.httpHeaders();
 
         // [STEP2] 통신을 위한 RestTemplate을 구성합니다.
-        ResponseEntity response = chatGPTConfig.restTemplate()
+        ResponseEntity<String> response = chatGPTConfig.restTemplate()
                 .exchange(
-                        "<https://api.openai.com/v1/models>",
+                        "https://api.openai.com/v1/models",
                         HttpMethod.GET,
                         new HttpEntity<>(headers),
                         String.class);
@@ -55,7 +55,7 @@ public class ChatGPTServiceImpl implements ChatGPTService {
         try {
             // [STEP3] Jackson을 기반으로 응답값을 가져옵니다.
             ObjectMapper om = new ObjectMapper();
-            Map<String, Object> data = om.readValue((JsonParser) response.getBody(), new TypeReference<>() {});
+            Map<String, Object> data = om.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {});
 
             // [STEP4] 응답 값을 결과값에 넣고 출력을 해봅니다.
             resultList = (List<Map<String, Object>>) data.get("data");
@@ -69,8 +69,6 @@ public class ChatGPTServiceImpl implements ChatGPTService {
             log.debug("JsonMappingException :: " + e.getMessage());
         } catch (JsonProcessingException e) {
             log.debug("RuntimeException :: " + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
         return resultList;
     }
@@ -90,20 +88,17 @@ public class ChatGPTServiceImpl implements ChatGPTService {
         HttpHeaders headers = chatGPTConfig.httpHeaders();
 
         // [STEP2] 통신을 위한 RestTemplate을 구성합니다.
-        ResponseEntity response = chatGPTConfig.restTemplate()
+        ResponseEntity<String>  response = chatGPTConfig.restTemplate()
                 .exchange(
-                        "<https://api.openai.com/v1/models/>" + modelName,
+                        "https://api.openai.com/v1/models/" + modelName,
                         HttpMethod.GET,
                         new HttpEntity<>(headers),
                         String.class);
         try {
             // [STEP3] Jackson을 기반으로 응답값을 가져옵니다.
             ObjectMapper om = new ObjectMapper();
-            result = om.readValue((JsonParser) response.getBody(), new TypeReference<>() {
-            });
+            result = om.readValue(response.getBody(), new TypeReference<>() {});
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return result;
