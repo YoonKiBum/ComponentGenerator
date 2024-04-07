@@ -1,7 +1,9 @@
 package com.example.compgeneratorbe.service.impl;
 
 import com.example.compgeneratorbe.config.ChatGPTConfig;
+import com.example.compgeneratorbe.model.ChatCompletionDto;
 import com.example.compgeneratorbe.model.CompletionRequestDto;
+import com.example.compgeneratorbe.model.MessagesDto;
 import com.example.compgeneratorbe.service.ChatGPTService;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,6 +16,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,11 +110,11 @@ public class ChatGPTServiceImpl implements ChatGPTService {
     /**
      * ChatGTP 프롬프트 검색
      *
-     * @param completionRequestDto
+     * @param userPrompt
      * @return
      */
     @Override
-    public Map<String, Object> prompt(CompletionRequestDto completionRequestDto) {
+    public Map<String, Object> prompt(String userPrompt) {
         log.debug("[+] 프롬프트를 수행합니다.");
 
         Map<String, Object> result = new HashMap<>();
@@ -122,34 +125,41 @@ public class ChatGPTServiceImpl implements ChatGPTService {
         String requestBody = "";
         ObjectMapper om = new ObjectMapper();
 
+
         // [STEP3] properties의 model을 가져와서 객체에 추가합니다.
-        completionRequestDto = completionRequestDto.builder()
-                .model(model)
-                .prompt(completionRequestDto.getPrompt())
+        ChatCompletionDto chatCompletionDto = ChatCompletionDto.builder()
+                .model("gpt-3.5-turbo")
+                .messages(new ArrayList<>(List.of(
+                        MessagesDto.builder()
+                                .role("system")
+                                .content("You are expert at React. Please create a single component using Tailwind CSS based on the user's input request. Do not provide any comments or explanations, and make sure the code is in javascript")
+                                .build(),
+                        MessagesDto.builder()
+                                .role("user")
+                                .content(userPrompt)
+                                .build()
+                )))
                 .temperature(0.8f)
                 .build();
 
         try {
             // [STEP4] Object -> String 직렬화를 구성합니다.
-            requestBody = om.writeValueAsString(completionRequestDto);
+            requestBody = om.writeValueAsString(chatCompletionDto);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
         // [STEP5] 통신을 위한 RestTemplate을 구성합니다.
-        HttpEntity requestEntity = new HttpEntity<>(completionRequestDto, headers);
-        ResponseEntity response = chatGPTConfig.restTemplate()
+        HttpEntity requestEntity = new HttpEntity<>(chatCompletionDto, headers);
+        ResponseEntity<String> response = chatGPTConfig.restTemplate()
                 .exchange(
-                        "<https://api.openai.com/v1/completions>",
+                        "https://api.openai.com/v1/chat/completions",
                         HttpMethod.POST,
                         requestEntity,
                         String.class);
         try {
             // [STEP6] String -> HashMap 역직렬화를 구성합니다.
-            result = om.readValue((JsonParser) response.getBody(), new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            result = om.readValue(response.getBody(), new TypeReference<>() {});
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
