@@ -1,5 +1,6 @@
 package com.example.compgeneratorbe.controller;
 
+import com.example.compgeneratorbe.model.ChatCompletionDto;
 import com.example.compgeneratorbe.model.CompletionRequestDto;
 import com.example.compgeneratorbe.service.ChatGPTService;
 import org.springframework.http.HttpStatus;
@@ -44,9 +45,8 @@ public class ChatGPTController {
      * [API] ChatGPT 모델 리스트를 조회합니다.
      */
     @PostMapping("/prompt")
-    public ResponseEntity<Map<String, Object>> selectPrompt(@RequestBody CompletionRequestDto completionRequestDto) {
-        Map<String, Object> result = chatGPTService.prompt(completionRequestDto);
+    public ResponseEntity<Map<String, Object>> selectPrompt(@RequestBody String userPrompt) {
+        Map<String, Object> result = chatGPTService.prompt(userPrompt);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-
 }
