@@ -1,7 +1,6 @@
 package com.example.compgeneratorbe.service;
 
-import com.example.compgeneratorbe.model.ChatCompletionDto;
-import com.example.compgeneratorbe.model.CompletionRequestDto;
+import com.example.compgeneratorbe.model.UserPromptDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,7 +11,7 @@ public interface ChatGPTService {
 
     List<Map<String, Object>> modelList();
 
-    Map<String, Object> prompt(String userPrompt);
+    Map<String, Object> prompt(UserPromptDto userPromptDto);
 
     Map<String, Object> isValidModel(String modelName);
 

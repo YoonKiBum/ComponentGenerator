@@ -1,9 +1,12 @@
 package com.example.compgeneratorbe.service.impl;
 
+import com.example.compgeneratorbe.common.constants.BusinessExceptionType;
+import com.example.compgeneratorbe.common.exception.BusinessException;
 import com.example.compgeneratorbe.config.ChatGPTConfig;
 import com.example.compgeneratorbe.model.ChatCompletionDto;
 import com.example.compgeneratorbe.model.CompletionRequestDto;
 import com.example.compgeneratorbe.model.MessagesDto;
+import com.example.compgeneratorbe.model.UserPromptDto;
 import com.example.compgeneratorbe.service.ChatGPTService;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -26,7 +30,8 @@ import java.util.Map;
 public class ChatGPTServiceImpl implements ChatGPTService {
 
     private final ChatGPTConfig chatGPTConfig;
-
+    @Autowired
+    private ObjectMapper objectMapper;
     public ChatGPTServiceImpl(ChatGPTConfig chatGPTConfig) {
         this.chatGPTConfig = chatGPTConfig;
     }
@@ -110,12 +115,15 @@ public class ChatGPTServiceImpl implements ChatGPTService {
     /**
      * ChatGTP 프롬프트 검색
      *
-     * @param userPrompt
+     * @param userPromptDto
      * @return
      */
     @Override
-    public Map<String, Object> prompt(String userPrompt) {
-        log.debug("[+] 프롬프트를 수행합니다.");
+    public Map<String, Object> prompt(UserPromptDto userPromptDto) {
+
+        if (userPromptDto.getUserPrompt().isEmpty()) {
+            throw new BusinessException(BusinessExceptionType.VALIDATION_EXCEPTION, "userPrompt는 null이 될 수 없습니다.", HttpStatus.BAD_REQUEST);
+        }
 
         Map<String, Object> result = new HashMap<>();
 
@@ -136,7 +144,7 @@ public class ChatGPTServiceImpl implements ChatGPTService {
                                 .build(),
                         MessagesDto.builder()
                                 .role("user")
-                                .content(userPrompt)
+                                .content(userPromptDto.getUserPrompt())
                                 .build()
                 )))
                 .temperature(0.8f)
