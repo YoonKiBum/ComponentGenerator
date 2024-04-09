@@ -1,18 +1,20 @@
 package com.example.compgeneratorbe.common.exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
 public class BusinessException extends RuntimeException {
 
+    private final String errorType;
     private final String errorMessage;
-    private final String errorCode;
     private final HttpStatus httpStatus;
 
 
-    public BusinessException(String errorMessage, String errorCode) {
-        super(errorMessage);
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
-        this.httpStatus = HttpStatus.OK;
+    public BusinessException(String errorType, String message, HttpStatus httpStatus) {
+        super(message);
+        this.errorType = errorType;
+        this.errorMessage = message;
+        this.httpStatus = httpStatus;
     }
 }

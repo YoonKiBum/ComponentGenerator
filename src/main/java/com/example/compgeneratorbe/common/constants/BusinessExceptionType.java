@@ -1,7 +1,5 @@
 package com.example.compgeneratorbe.common.constants;
 
-import com.example.compgeneratorbe.common.exception.BusinessException;
-
 public final class BusinessExceptionType {
 
     private BusinessExceptionType() {}
