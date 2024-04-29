@@ -1,11 +1,9 @@
 package com.example.compgeneratorbe.config.jwt;
 
 import com.example.compgeneratorbe.domain.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,13 +16,16 @@ import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class TokenProvider {
 
     private final JwtProperties jwtProperties;
 
     public String generateToken(User user, Duration expiredAt) {
         Date now = new Date();
-        return makeToken(new Date(now.getTime() + expiredAt.toMillis()), user);
+        String newToken = makeToken(new Date(now.getTime() + expiredAt.toMillis()), user);
+        log.info("newToken " + newToken);
+        return newToken;
     }
 
     private String makeToken(Date expiry, User user) {
@@ -48,7 +49,8 @@ public class TokenProvider {
                     .parseClaimsJws(token);
 
             return true;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
     }

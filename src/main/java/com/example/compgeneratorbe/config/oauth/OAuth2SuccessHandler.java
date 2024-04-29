@@ -6,9 +6,12 @@ import com.example.compgeneratorbe.domain.RefreshToken;
 import com.example.compgeneratorbe.domain.User;
 import com.example.compgeneratorbe.repository.RefreshTokenRepository;
 import com.example.compgeneratorbe.service.UserService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -18,14 +21,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.time.Duration;
 
+import static com.example.compgeneratorbe.common.constants.Const.ACCESS_TOKEN_COOKIE_NAME;
+import static com.example.compgeneratorbe.common.constants.Const.REFRESH_TOKEN_COOKIE_NAME;
+
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    public static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
-    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofDays(1);
-    public static final String REDIRECT_PATH = "https://calculator-ai-chi.vercel.app/";
+    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(2);
+    public static final String REDIRECT_PATH = "http://localhost:5173";
 
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -42,11 +48,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         addRefreshTokenToCookie(request, response, refreshToken);
 
         String accessToken = tokenProvider.generateToken(user, ACCESS_TOKEN_DURATION);
-        String targetUrl = getTargetUrl(accessToken);
+        int cookieMaxAge = (int) REFRESH_TOKEN_DURATION.toSeconds();
+        CookieUtil.addCookie(response, ACCESS_TOKEN_COOKIE_NAME, accessToken, cookieMaxAge);
 
         clearAuthenticationAttributes(request, response);
 
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        getRedirectStrategy().sendRedirect(request, response, REDIRECT_PATH);
     }
 
     private void saveRefreshToken(Long userId, String newRefreshToken) {
@@ -67,12 +74,5 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
         super.clearAuthenticationAttributes(request);
         authorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
-    }
-
-    private String getTargetUrl(String token) {
-        return UriComponentsBuilder.fromUriString(REDIRECT_PATH)
-                .queryParam("token", token)
-                .build()
-                .toUriString();
     }
 }
