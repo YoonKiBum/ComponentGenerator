@@ -4,15 +4,15 @@ import com.example.compgeneratorbe.domain.User;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.json.BasicJsonParser;
+import org.springframework.boot.json.JsonParser;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -74,5 +74,16 @@ public class TokenProvider {
                 .setSigningKey(jwtProperties.getSecretKey())
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public String getSubFromJwtPayload(String jwtPayload) {
+        final String payloadJWT = jwtPayload.split("\\.")[1];
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+
+        final String payload = new String(decoder.decode(payloadJWT));
+        JsonParser jsonParser = new BasicJsonParser();
+        Map<String, Object> jsonArray = jsonParser.parseMap(payload);
+
+        return jsonArray.get("sub").toString();
     }
 }
