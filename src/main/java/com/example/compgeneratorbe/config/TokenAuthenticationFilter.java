@@ -1,7 +1,5 @@
 package com.example.compgeneratorbe.config;
 
-import com.example.compgeneratorbe.common.constants.BusinessExceptionType;
-import com.example.compgeneratorbe.common.exception.BusinessException;
 import com.example.compgeneratorbe.common.exception.TokenException;
 import com.example.compgeneratorbe.config.jwt.TokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.lang.model.type.ErrorType;
 import java.io.IOException;
 
 @Slf4j
@@ -36,6 +33,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         if (tokenProvider.validToken(token)) {
             Authentication authentication = tokenProvider.getAuthentication(token);
+            String userEmail = tokenProvider.getSubFromJwtPayload(token);
+            request.setAttribute("userEmail", userEmail);
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else{
             jwtExceptionHandler(response, HttpStatus.UNAUTHORIZED);

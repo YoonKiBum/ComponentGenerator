@@ -1,6 +1,5 @@
 package com.example.compgeneratorbe.common.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
