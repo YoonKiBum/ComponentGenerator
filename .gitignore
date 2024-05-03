@@ -41,3 +41,5 @@ application-oauth.properties
 
 ### yml ###
 application-gpt.properties
+
+application-db.properties
