@@ -42,4 +42,6 @@ application-oauth.properties
 ### yml ###
 application-gpt.properties
 
-application-db.properties
+application-real-db.properties
+
+application-real-oauth.properties
